@@ -1,4 +1,3 @@
-nano Porn-Hub_tool.py
 
 import requests
 import os
