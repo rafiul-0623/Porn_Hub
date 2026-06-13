@@ -198,7 +198,7 @@ if choice in ["3", "4", "৩", "৪"]:
 # -------------------------------------------------------------
 # METHOD 5: RANDOM CLONE
 # -------------------------------------------------------------
-if choice in ["5", "৫"]:
+elif choice in ["5", "৫"]:
     os.system('clear')
     print("====================================")
     
@@ -331,7 +331,10 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=thread_speed) as executor
 
 print(f"\n\n{GREEN}[+] Complete Task Finished. Total Runtime: {get_elapsed_time()}{RESET}")
 
-elif choice in ["6", "৬"]:
+# -------------------------------------------------------------
+# METHOD 6: error script 
+# -------------------------------------------------------------
+if choice in ["6", "৬"]:
     os.system('clear')
     print("====================================")
     
