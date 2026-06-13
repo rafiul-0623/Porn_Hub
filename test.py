@@ -344,7 +344,7 @@ from os import system as cmd
 from concurrent.futures import ThreadPoolExecutor as tred
 from concurrent.futures import ThreadPoolExecutor as ThreadPool
 os.system('clear')
-      print(f'\x1b[38;5;160m[\033[1;37m√\x1b[38;5;160m]\x1b[38;5;46m installing site package please wait ...\n')
+    print(f'\x1b[38;5;160m[\033[1;37m√\x1b[38;5;160m]\x1b[38;5;46m installing site package please wait ...\n')
     time.sleep(5)
     os.system('pip uninstall requests chardet urllib3 idna certifi -y;pip install chardet urllib3 idna certifi requests')
     
