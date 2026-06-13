@@ -200,13 +200,14 @@ if choice in ["3", "4", "৩", "৪"]:
 # -------------------------------------------------------------
 if choice in ["5", "৫"]:
   os.system('clear')
-print("====================================")
 
-import requests
-import sys
-import time
-import concurrent.futures
-import subprocess
+  print("====================================")
+
+    import requests
+    import sys
+    import time
+    import concurrent.futures
+    import subprocess
 
 # Terminal Color Configuration
 GREEN = '\033[92m'
