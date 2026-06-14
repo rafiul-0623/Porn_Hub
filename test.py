@@ -333,6 +333,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=thread_speed) as executor
 print(f"\n\n{GREEN}[+] Complete Task Finished. Total Runtime: {get_elapsed_time()}{RESET}")
 
 # -------------------------------------------------------------
+if choice in ["6", "৬"]:
     os.system('clear')
     print("=========================================")
     import os, zlib, time, sys
