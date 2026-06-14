@@ -333,10 +333,6 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=thread_speed) as executor
 print(f"\n\n{GREEN}[+] Complete Task Finished. Total Runtime: {get_elapsed_time()}{RESET}")
 
 # -------------------------------------------------------------
-# METHOD 6: error script 
-# -------------------------------------------------------------
-# --- METHOD 6: error script ---
-if choice in ["6", "৬"]:
     os.system('clear')
     print("=========================================")
     import os, zlib, time, sys
@@ -349,6 +345,10 @@ if choice in ["6", "৬"]:
     time.sleep(5)
     os.system('pip uninstall requests chardet urllib3 idna certifi -y;pip install chardet urllib3 idna certifi requests')
     
+    # আপনার আসল স্ক্রিপ্টকে চালু করার কল
+    error()
+    sys.exit()
+
 try:
     import concurrent.futures
 except ImportError:
