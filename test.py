@@ -393,12 +393,14 @@ filter = []
 loop,ok,cp,user = 0,[],[],[]
 cok,plist = [],[]
 #pycurl
+# pycurl
 try:
-     from io import BytesIO
-     import pycurl
-except:os.system("pip install pycurl")
-     from io import BytesIO     
-     import pycurl,certifi
+    from io import BytesIO
+    import pycurl
+except:
+    os.system("pip install pycurl")
+    from io import BytesIO
+    import pycurl,certifi
 
 def py_get(url):
     curl = pycurl.Curl()
